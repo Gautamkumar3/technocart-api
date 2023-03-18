@@ -57,8 +57,8 @@ const transport = nodemailer.createTransport({
   host: "smtp.gmail.com",
   port: 465,
   auth: {
-    user: "technocart341998@gmail.com",
-    pass: "kfkrkztmrqvpapjv",
+    user: "techcart341998@gmail.com",
+    pass: "nupoupctjereplee",
   },
 });
 
@@ -66,7 +66,7 @@ const sendMail = (email, otp) => {
   transport
     .sendMail({
       to: email,
-      from: "technocart341998@gmail.com",
+      from: "techcart341998@gmail.com",
       subject: "Welcome",
       text: `Hello User,
               
