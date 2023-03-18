@@ -1,6 +1,7 @@
 const PartnerModal = require("../modal/Partner");
 const nodemailer = require("nodemailer");
 require("dotenv").config();
+const OtpModal = require("../modal/OTP");
 
 const addPartner = async (req, res) => {
   try {
@@ -13,9 +14,15 @@ const addPartner = async (req, res) => {
 };
 
 const getPartnerData = async (req, res) => {
+  const { page = 1, limit = 10 } = req.query;
   try {
-    let data = await PartnerModal.find();
-    res.status(200).send({ status: "success", data: data });
+    let length = await PartnerModal.find();
+    let data = await PartnerModal.find()
+      .skip((page - 1) * limit)
+      .limit(limit);
+    res
+      .status(200)
+      .send({ status: "success", data: data, length: length.length });
   } catch (er) {
     res.status(401).send({ status: "error", msg: er.message });
   }
@@ -46,45 +53,61 @@ const deletePartnerData = async (req, res) => {
   }
 };
 
+const transport = nodemailer.createTransport({
+  host: "smtp.gmail.com",
+  port: 465,
+  auth: {
+    user: "technocart341998@gmail.com",
+    pass: "kfkrkztmrqvpapjv",
+  },
+});
+
+const sendMail = (email, otp) => {
+  transport
+    .sendMail({
+      to: email,
+      from: "technocart341998@gmail.com",
+      subject: "Welcome",
+      text: `Hello User,
+              
+            Welcome !!!
+            You Succesfully register to Our Website your otp is ${otp}
+                
+            Regards
+            Technocart
+      `,
+    })
+    .catch((e) => {
+      console.log(e.message, "error");
+    });
+};
+let otp;
+
+function deleteOtp(otp) {
+  setTimeout(async () => {
+    let data = await OtpModal.deleteOne({ otp });
+    console.log(data, "deleteddata");
+  }, 120000);
+}
+
 const partnerLogin = async (req, res) => {
   const { email } = req.body;
-  const otp = Math.floor(Math.random() * 100000);
 
+  otp = Math.floor(Math.random() * 90000) + 10000;
   try {
     let partnerData = await PartnerModal.findOne({ Partner_email: email });
     if (partnerData) {
-      res.status(200).send("Login successfull");
+      sendMail(email, otp);
+      let data = new OtpModal({ otp });
+      await data.save();
+      deleteOtp(otp);
+      res.status(200).send({ msg: "Login successfull", otp: otp });
     } else {
       res.status(404).send("No partner found");
     }
   } catch (er) {
     res.status(401).send({ status: "error", msg: er.message });
   }
-
-  // const transport = nodemailer.createTransport({
-  //   service: "gmail",
-  //   host: "smtp.gmail.com",
-  //   secure: false,
-  //   auth: {
-  //     user: `${process.env.EMAIL}`,
-  //     password: `${process.env.PASSWORD}`,
-  //   },
-  // });
-
-  // let details = {
-  //   from: `${process.env.EMAIL}`,
-  //   to: email,
-  //   subject: "OTP",
-  //   html: `Hello ${email}, this is your OTP : ${otp}`,
-  // };
-
-  // transport.sendMail(details, function (err, data) {
-  //   if (err) {
-  //     console.log(err);
-  //   } else {
-  //     console.log("Email sent successfully");
-  //   }
-  // });
 };
 
 module.exports = {

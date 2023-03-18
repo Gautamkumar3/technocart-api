@@ -1,1 +1,0 @@
-# technocart-api

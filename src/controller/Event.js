@@ -10,6 +10,15 @@ const addEvent = async (req, res) => {
   }
 };
 
+const getAllEvent = async (req, res) => {
+  try {
+    let data = await EventModal.find();
+    res.status(200).send({ status: "success", data: data });
+  } catch (er) {
+    res.status(401).send({ status: "error", msg: er.message });
+  }
+};
 module.exports = {
   addEvent,
+  getAllEvent
 };

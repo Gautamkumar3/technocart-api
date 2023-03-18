@@ -1,16 +1,35 @@
+const AdminModal = require("../modal/Admin");
+const secretKey = process.env.SECRET_KEY;
+const jwt = require("jsonwebtoken");
+
 const loginAdmin = async (req, res) => {
-    const { email, password } = req.body;
-    console.log(email)
+  const { email, password } = req.body;
+  if (!email || !password) {
+    return res
+      .status(404)
+      .send({ status: "warning", message: `email or password is missing` });
+  }
   try {
-    if (email === "admin@gmail.com" && password === "12345678") {
-      res.status(200).send({ status: "success", msg: "login successfull" });
+    const admin = await AdminModal.findOne({ email, password });
+    if (!admin) {
+      res.status(401).send({ status: "error", message: "Invalid Credentials" });
     } else {
-      res.status(404).send({ status: "false", msg: "login failed" });
+      const token = jwt.sign(
+        { email: admin.email, password: admin.name, role: "admin" },
+        secretKey,
+        { expiresIn: "1 day" }
+      );
+      res.status(200).send({
+        status: "success",
+        message: "Login successfull",
+        token: token,
+      });
     }
   } catch (er) {
-    res.status(401).send({ status: "error", msg: er.message });
+    res.status(401).send({ status: "error", message: er.message });
   }
 };
+
 module.exports = {
   loginAdmin,
 };
