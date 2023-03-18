@@ -16,7 +16,7 @@ const loginAdmin = async (req, res) => {
     } else {
       const token = jwt.sign(
         { email: admin.email, password: admin.name, role: "admin" },
-        "sdfsderwerw3454353'34.,m34",
+        secretKey,
         { expiresIn: "1 day" }
       );
       res.status(200).send({
